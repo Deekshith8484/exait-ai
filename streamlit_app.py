@@ -740,24 +740,24 @@ def show_home_page():
     """, unsafe_allow_html=True)
     
     col1, col2 = st.columns(2, gap="large")
-        
-        with col1:
-            st.markdown(
-                """
-                ###  About EXRT AI Heart Health Monitoring
-                
-                EXRT AI leverages advanced machine learning to analyze ECG data and assess your 
-                physiological readiness in real-time, empowering you to make informed decisions 
-                about your health and performance.
-                
-                **What is Readiness?**
-                -  **Physiological State Assessment** - Real-time measure of your body's capacity
-                - ❤️ **HRV-Based Analysis** - Utilizing Heart Rate Variability patterns
-                -  **Activity Optimization** - Indicates optimal timing for physical/mental tasks
-                
-                **Readiness Levels:**
-                - **🟢 Ready (≥70%)**: High autonomic stability, optimal for intense activity
-                - **🟡 Neutral (40-70%)**: Moderate state, suitable for standard activity
+    
+    with col1:
+        st.markdown(
+            """
+            ###  About EXRT AI Heart Health Monitoring
+            
+            EXRT AI leverages advanced machine learning to analyze ECG data and assess your 
+            physiological readiness in real-time, empowering you to make informed decisions 
+            about your health and performance.
+            
+            **What is Readiness?**
+            -  **Physiological State Assessment** - Real-time measure of your body's capacity
+            - ❤️ **HRV-Based Analysis** - Utilizing Heart Rate Variability patterns
+            -  **Activity Optimization** - Indicates optimal timing for physical/mental tasks
+            
+            **Readiness Levels:**
+            - **🟢 Ready (≥70%)**: High autonomic stability, optimal for intense activity
+            - **🟡 Neutral (40-70%)**: Moderate state, suitable for standard activity
                 - **🔴 Recovery (<40%)**: Low stability, rest and recovery recommended
                 
                 **Key Features:**

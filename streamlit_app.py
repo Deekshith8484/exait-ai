@@ -740,102 +740,102 @@ def show_home_page():
     """, unsafe_allow_html=True)
     
     col1, col2 = st.columns(2, gap="large")
-        
-        with col1:
-            st.markdown(
-                """
-                ###  About EXRT AI Heart Health Monitoring
-                
-                EXRT AI leverages advanced machine learning to analyze ECG data and assess your 
-                physiological readiness in real-time, empowering you to make informed decisions 
-                about your health and performance.
-                
-                **What is Readiness?**
-                -  **Physiological State Assessment** - Real-time measure of your body's capacity
-                - ❤️ **HRV-Based Analysis** - Utilizing Heart Rate Variability patterns
-                -  **Activity Optimization** - Indicates optimal timing for physical/mental tasks
-                
-                **Readiness Levels:**
-                - **🟢 Ready (≥70%)**: High autonomic stability, optimal for intense activity
-                - **🟡 Neutral (40-70%)**: Moderate state, suitable for standard activity
-                - **🔴 Recovery (<40%)**: Low stability, rest and recovery recommended
-                
-                **Key Features:**
-                - 🧠 AI-powered predictions with confidence scoring
-                - 💓 Detailed HRV breakdown (RMSSD, SDNN, LF/HF)
-                - 📈 Trend analysis showing improvement or decline
-                - 🎨 Interactive visualizations for deep insights
-                """
-            )
-        
-        with col2:
-            st.markdown(
-                """
-                ### 📋 Supported File Formats
-                
-                **CSV** - Comma-separated ECG values
-                - Single column: Direct ECG samples
-                - Multiple columns: Automatically uses last column
-                - Compatible with most ECG export formats
-                
-                **NPY** - NumPy binary arrays
-                - Direct NumPy format from Python scripts
-                - Fast loading for large datasets
-                
-                **PKL** - Python pickle files
-                - PPG+Dalia format: `data["signal"]["chest"]["ECG"]`
-                - Direct arrays, lists, or tuples
-                - Supports files up to **2GB**
-                
-                ###  Understanding Confidence Scores
-                - **0-50%**: Low confidence - results may be unreliable
-                - **50-70%**: Medium confidence - generally acceptable
-                - **70-100%**: High confidence - very reliable predictions
-                
-                ###  Prediction Accuracy
-                - Percentage of predictions with **≥70% confidence**
-                - Higher accuracy indicates better signal quality
-                - Reflects overall reliability of the analysis
-                
-                ### 💡 Pro Tips
-                ✓ Use 90-second windows for optimal HRV analysis  
-                ✓ Ensure correct sampling rate (700Hz for PPG+Dalia)  
-                ✓ Clean ECG signals = more accurate predictions  
-                ✓ Check HRV metrics for deeper physiological insights  
-                """
-            )
-        
-        # Feature highlights
-        st.markdown("---")
-        st.subheader("🌟 Key Capabilities")
-        
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            st.markdown("""
-            <div style="background: white; padding: 1.5rem; border-radius: 10px; 
-                        box-shadow: 0 4px 12px rgba(0,0,0,0.1); text-align: center;">
-                <h3>🧠 AI-Powered</h3>
-                <p>Advanced machine learning models trained on thousands of ECG windows</p>
-            </div>
-            """, unsafe_allow_html=True)
-        
-        with col2:
-            st.markdown("""
-            <div style="background: white; padding: 1.5rem; border-radius: 10px; 
-                        box-shadow: 0 4px 12px rgba(0,0,0,0.1); text-align: center;">
-                <h3>💓 HRV Analysis</h3>
-                <p>Comprehensive heart rate variability metrics including RMSSD, SDNN, and LF/HF ratio</p>
-            </div>
-            """, unsafe_allow_html=True)
-        
-        with col3:
-            st.markdown("""
-            <div style="background: white; padding: 1.5rem; border-radius: 10px; 
-                        box-shadow: 0 4px 12px rgba(0,0,0,0.1); text-align: center;">
-                <h3>📈 Trend Tracking</h3>
-                <p>Monitor readiness improvement or decline over time with statistical analysis</p>
-            </div>
-            """, unsafe_allow_html=True)
+    
+    with col1:
+        st.markdown(
+            """
+            ###  About EXRT AI Heart Health Monitoring
+            
+            EXRT AI leverages advanced machine learning to analyze ECG data and assess your 
+            physiological readiness in real-time, empowering you to make informed decisions 
+            about your health and performance.
+            
+            **What is Readiness?**
+            -  **Physiological State Assessment** - Real-time measure of your body's capacity
+            - ❤️ **HRV-Based Analysis** - Utilizing Heart Rate Variability patterns
+            -  **Activity Optimization** - Indicates optimal timing for physical/mental tasks
+            
+            **Readiness Levels:**
+            - **🟢 Ready (≥70%)**: High autonomic stability, optimal for intense activity
+            - **🟡 Neutral (40-70%)**: Moderate state, suitable for standard activity
+            - **🔴 Recovery (<40%)**: Low stability, rest and recovery recommended
+            
+            **Key Features:**
+            - 🧠 AI-powered predictions with confidence scoring
+            - 💓 Detailed HRV breakdown (RMSSD, SDNN, LF/HF)
+            - 📈 Trend analysis showing improvement or decline
+            - 🎨 Interactive visualizations for deep insights
+            """
+        )
+    
+    with col2:
+        st.markdown(
+            """
+            ### 📋 Supported File Formats
+            
+            **CSV** - Comma-separated ECG values
+            - Single column: Direct ECG samples
+            - Multiple columns: Automatically uses last column
+            - Compatible with most ECG export formats
+            
+            **NPY** - NumPy binary arrays
+            - Direct NumPy format from Python scripts
+            - Fast loading for large datasets
+            
+            **PKL** - Python pickle files
+            - PPG+Dalia format: `data["signal"]["chest"]["ECG"]`
+            - Direct arrays, lists, or tuples
+            - Supports files up to **2GB**
+            
+            ###  Understanding Confidence Scores
+            - **0-50%**: Low confidence - results may be unreliable
+            - **50-70%**: Medium confidence - generally acceptable
+            - **70-100%**: High confidence - very reliable predictions
+            
+            ###  Prediction Accuracy
+            - Percentage of predictions with **≥70% confidence**
+            - Higher accuracy indicates better signal quality
+            - Reflects overall reliability of the analysis
+            
+            ### 💡 Pro Tips
+            ✓ Use 90-second windows for optimal HRV analysis  
+            ✓ Ensure correct sampling rate (700Hz for PPG+Dalia)  
+            ✓ Clean ECG signals = more accurate predictions  
+            ✓ Check HRV metrics for deeper physiological insights  
+            """
+        )
+    
+    # Feature highlights
+    st.markdown("---")
+    st.subheader("🌟 Key Capabilities")
+    
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.markdown("""
+        <div style="background: white; padding: 1.5rem; border-radius: 10px; 
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.1); text-align: center;">
+            <h3>🧠 AI-Powered</h3>
+            <p>Advanced machine learning models trained on thousands of ECG windows</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        st.markdown("""
+        <div style="background: white; padding: 1.5rem; border-radius: 10px; 
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.1); text-align: center;">
+            <h3>💓 HRV Analysis</h3>
+            <p>Comprehensive heart rate variability metrics including RMSSD, SDNN, and LF/HF ratio</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        st.markdown("""
+        <div style="background: white; padding: 1.5rem; border-radius: 10px; 
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.1); text-align: center;">
+            <h3>📈 Trend Tracking</h3>
+            <p>Monitor readiness improvement or decline over time with statistical analysis</p>
+        </div>
+        """, unsafe_allow_html=True)
     
     # Footer
     st.markdown("""

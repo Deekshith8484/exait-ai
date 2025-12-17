@@ -1,4 +1,4 @@
-"""Load and use the trained readiness model for inference.
+"""Load and use the trained readiness model for inference.uvicorn api:app --reloaduvicorn api:app --reload
 
 This module provides utilities to:
 1. Load the saved model bundle

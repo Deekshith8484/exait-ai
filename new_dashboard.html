@@ -818,12 +818,37 @@
         // ============================================================================
         // CONFIGURATION
         // ============================================================================
-        // IMPORTANT: Never expose API keys in client-side code in a real application.
-        // This key should be stored in a secure backend and API calls should be proxied.
-        GEMINI_API_KEY: "AIzaSyAh_aH2sYEI3MBFZ19sKnirwH0-a2hAM9I", // API Key removed for security
-        BACKEND_API_URL: "http://localhost:8000",
+        // IMPORTANT: API configuration for Streamlit deployment
+        GEMINI_API_KEY: null, // Will be fetched from Streamlit backend
+        BACKEND_API_URL: window.location.origin, // Use same origin in production
         get GEMINI_API_URL() {
+            if (!this.GEMINI_API_KEY) {
+                return null;
+            }
             return `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${this.GEMINI_API_KEY}`;
+        },
+        
+        // Initialize and fetch Gemini API key from Streamlit backend
+        async initializeGeminiKey() {
+            try {
+                // Try to get from session storage first
+                const cached = sessionStorage.getItem('gemini_key');
+                if (cached) {
+                    this.GEMINI_API_KEY = cached;
+                    console.log("✓ Gemini API key loaded from cache");
+                    return;
+                }
+                
+                // Fallback: read from environment or hardcoded (for Streamlit secrets)
+                // In Streamlit Cloud, secrets are accessed via Python
+                if (window.GEMINI_API_KEY) {
+                    this.GEMINI_API_KEY = window.GEMINI_API_KEY;
+                    sessionStorage.setItem('gemini_key', this.GEMINI_API_KEY);
+                    console.log("✓ Gemini API key loaded");
+                }
+            } catch (error) {
+                console.error("⚠️ Could not initialize Gemini API key:", error);
+            }
         },
         
         // ============================================================================
@@ -1169,25 +1194,31 @@
         // ============================================================================
         async callGeminiAPI(systemPrompt, userPrompt) {
             try {
-                // Call the backend endpoint which handles Gemini API
-                const response = await fetch(`${this.BACKEND_API_URL}/chat`, {
+                const response = await fetch(this.GEMINI_API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        message: userPrompt,
-                        context: systemPrompt
+                        contents: [{
+                            parts: [{
+                                text: systemPrompt + "\n\n" + userPrompt
+                            }]
+                        }],
+                        generationConfig: {
+                            temperature: 0.7,
+                            maxOutputTokens: 1024
+                        }
                     })
                 });
                 
                 if (!response.ok) {
-                    throw new Error(`API request failed: ${response.statusText}`);
+                    throw new Error('API request failed');
                 }
                 
                 const data = await response.json();
-                return data.response || '⚠️ **Error**: No response from AI service.';
+                return data.candidates[0].content.parts[0].text;
             } catch (error) {
                 console.error('Gemini API Error:', error);
-                return '⚠️ **Error**: Unable to connect to AI service. Please make sure the backend is running. Details: ' + error.message;
+                return '⚠️ **Error**: Unable to connect to AI service. Please check your connection and try again.';
             }
         },
         
@@ -1419,6 +1450,7 @@ Design today's nutrition plan (breakfast, lunch, dinner, snacks) optimized for r
             
             const formData = new FormData();
             formData.append('file', this.selectedFile);
+            formData.append('action', 'analyze');
             
             try {
                 // Animate progress bar
@@ -1429,7 +1461,8 @@ Design today's nutrition plan (breakfast, lunch, dinner, snacks) optimized for r
                     document.getElementById('uploadProgressBar').style.width = progress + '%';
                 }, 100);
                 
-                const response = await fetch(`${this.BACKEND_API_URL}/upload/signal`, {
+                // Send to Streamlit backend (using Stramlit's built-in file handling)
+                const response = await fetch('?action=upload_analyze', {
                     method: 'POST',
                     body: formData
                 });
@@ -1625,6 +1658,9 @@ Answer the user's question concisely based on the provided data.`;
         // ============================================================================
         init() {
             try {
+                // Initialize Gemini API key first
+                this.initializeGeminiKey();
+                
                 this.initUI();
                 this.initEcgChart();
                 this.initWellnessChart();

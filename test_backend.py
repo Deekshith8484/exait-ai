@@ -3,7 +3,6 @@
 
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
 import uvicorn
 import sys
 import io
@@ -14,7 +13,6 @@ import numpy as np
 import pandas as pd
 import os
 from dotenv import load_dotenv
-import google.generativeai as genai
 
 # Load environment variables
 load_dotenv()
@@ -35,14 +33,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Configure Gemini
-GEMINI_API_KEY = os.getenv("Gemini_API_KEY")
-if GEMINI_API_KEY:
-    genai.configure(api_key=GEMINI_API_KEY)
-    print("✓ Gemini API configured")
-else:
-    print("⚠ Gemini API key not found in .env")
-
 # Load model
 model = None
 
@@ -60,44 +50,17 @@ def startup():
 def health():
     return {"status": "ok", "model_loaded": model is not None}
 
+@app.get("/api/gemini-key")
+def get_gemini_key():
+    """Get Gemini API key from environment."""
+    api_key = os.getenv("Gemini_API_KEY")
+    if not api_key:
+        raise HTTPException(status_code=500, detail="Gemini API key not configured")
+    return {"api_key": api_key}
+
 @app.get("/")
 def root():
     return {"message": "EXRT Backend"}
-
-# Define request model for chat
-class ChatRequest(BaseModel):
-    message: str
-    context: str = "sports performance and fitness"
-
-@app.post("/chat")
-async def chat(request: ChatRequest):
-    """Chat with Gemini AI."""
-    if not GEMINI_API_KEY:
-        raise HTTPException(status_code=500, detail="Gemini API not configured")
-    
-    try:
-        # Create system prompt for EXRT AI context
-        system_prompt = f"""You are an AI assistant for EXRT AI, a sports performance and readiness monitoring platform. 
-You provide expert advice on athletic performance, ECG analysis, heart rate readiness, and recovery optimization.
-Current context: {request.context}
-
-Provide helpful, accurate, and concise responses focused on sports science and athletic performance."""
-        
-        # Initialize generative model
-        model_ai = genai.GenerativeModel('gemini-pro')
-        
-        # Generate response
-        response = model_ai.generate_content(
-            f"{system_prompt}\n\nUser question: {request.message}"
-        )
-        
-        return {
-            "response": response.text,
-            "status": "success"
-        }
-    except Exception as e:
-        print(f"❌ Chat error: {e}")
-        raise HTTPException(status_code=500, detail=f"Chat error: {str(e)}")
 
 @app.post("/upload/signal")
 async def upload_signal(file: UploadFile = File(...)):

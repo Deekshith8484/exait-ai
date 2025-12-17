@@ -1,0 +1,36 @@
+python-dotenv could not parse statement starting at line 2
+python-dotenv could not parse statement starting at line 3
+G:\exait ai\test_backend.py:39: DeprecationWarning: 
+        on_event is deprecated, use lifespan event handlers instead.
+
+        Read more about it in the
+        [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+        
+  @app.on_event("startup")
+INFO:     Started server process [23412]
+INFO:     Waiting for application startup.
+ERROR:    Traceback (most recent call last):
+  File "G:\exait ai\test_backend.py", line 44, in startup
+    model = ReadinessModel()
+  File "G:\exait ai\analysis\models\inference.py", line 56, in __init__
+    print(f"\u2713 Model loaded from {model_path.resolve()}")
+  File "C:\Users\kmdee\anaconda\envs\tf-gpu\lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+UnicodeEncodeError: 'charmap' codec can't encode character '\u2713' in position 0: character maps to <undefined>
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\kmdee\anaconda\envs\tf-gpu\lib\site-packages\starlette\routing.py", line 694, in lifespan
+    async with self.lifespan_context(app) as maybe_state:
+  File "C:\Users\kmdee\anaconda\envs\tf-gpu\lib\site-packages\starlette\routing.py", line 571, in __aenter__
+    await self._router.startup()
+  File "C:\Users\kmdee\anaconda\envs\tf-gpu\lib\site-packages\starlette\routing.py", line 673, in startup
+    handler()
+  File "G:\exait ai\test_backend.py", line 47, in startup
+    print(f"\u274c Model load failed: {e}")
+  File "C:\Users\kmdee\anaconda\envs\tf-gpu\lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+UnicodeEncodeError: 'charmap' codec can't encode character '\u274c' in position 0: character maps to <undefined>
+
+ERROR:    Application startup failed. Exiting.

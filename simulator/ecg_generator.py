@@ -113,30 +113,55 @@ class ECGGenerator:
         Returns:
             Dictionary with ECG signal, heart rate, and state info
         """
-        # State-dependent parameters
+        # State-dependent parameters with variable HR for realism
         state_params = {
-            'rest': {'hr': 65, 'hrv': 'high', 'readiness': 85},
-            'active': {'hr': 95, 'hrv': 'normal', 'readiness': 65},
-            'stress': {'hr': 110, 'hrv': 'low', 'readiness': 35},
-            'recovery': {'hr': 75, 'hrv': 'normal', 'readiness': 55},
+            'rest': {'hr_base': 65, 'hr_var': 15, 'hrv': 'high', 'readiness': 85},
+            'active': {'hr_base': 120, 'hr_var': 35, 'hrv': 'normal', 'readiness': 65},
+            'stress': {'hr_base': 130, 'hr_var': 40, 'hrv': 'low', 'readiness': 35},
+            'recovery': {'hr_base': 85, 'hr_var': 25, 'hrv': 'normal', 'readiness': 55},
         }
         
         params = state_params.get(state, state_params['rest'])
-        hr = params['hr']
+        hr_base = params['hr_base']
+        hr_var = params['hr_var']
         hrv_level = params['hrv']
         expected_readiness = params['readiness']
         
-        # Calculate base RR interval
-        base_rr = 60.0 / hr
-        
-        # Generate ECG
+        # Generate ECG with dynamic HR variation (athletic activity simulation)
         ecg_signal = []
         current_time = 0.0
         actual_hr_samples = []
         
         while current_time < duration_sec:
-            # Add HRV to RR interval
-            rr_interval = self.add_hrv(base_rr, hrv_level)
+            # Create realistic HR variation with peaks (running) and valleys (stopping/rest)
+            # Simulate burst of activity every 40-50 seconds
+            activity_cycle = (current_time % 50) / 50  # 50 second cycle (longer for realistic recovery)
+            
+            if activity_cycle < 0.25:  # Sprint phase (0-12.5s) - HIGH intensity
+                activity_intensity = 1.0  # Max intensity
+            elif activity_cycle < 0.30:  # Quick transition down (12.5-15s)
+                activity_intensity = 0.5 + np.cos(np.pi * (activity_cycle - 0.25) / 0.05) * 0.5
+            elif activity_cycle < 0.55:  # Slow recovery (15-27.5s) - gradual HR decrease
+                activity_intensity = max(0.0, 1.0 - ((activity_cycle - 0.30) / 0.25))
+            else:  # Rest phase (27.5-50s) - LOW activity, HR drops significantly
+                activity_intensity = 0.0
+            
+            # Apply activity intensity to heart rate with smoother transitions
+            # Peak HR during sprint, drops during recovery, stays low during rest
+            current_hr = hr_base + (hr_var * activity_intensity)
+            
+            # Add smooth HR transitions and realistic HRV
+            if activity_intensity > 0.8:
+                hrv_current = 'low'   # Less HRV during intense activity (stressed)
+            elif activity_intensity > 0.3:
+                hrv_current = 'normal'  # Normal HRV during moderate recovery
+            else:
+                hrv_current = 'high'  # More HRV during rest (relaxed)
+            
+            base_rr = 60.0 / current_hr
+            
+            # Add HRV
+            rr_interval = self.add_hrv(base_rr, hrv_current)
             rr_interval = max(0.4, min(rr_interval, 1.5))  # Physiological limits
             
             # Generate one heartbeat
@@ -151,22 +176,38 @@ class ECGGenerator:
         # Convert to numpy array and truncate to exact duration
         ecg_signal = np.array(ecg_signal[:int(duration_sec * self.fs)])
         
-        # Add realistic noise
+        # Add realistic noise (more noise during activity)
         if noise_level > 0:
             # Baseline wander (low frequency)
             baseline_wander = 0.1 * noise_level * np.sin(2 * np.pi * 0.3 * np.arange(len(ecg_signal)) / self.fs)
             
-            # High frequency noise
-            hf_noise = noise_level * np.random.normal(0, 0.02, len(ecg_signal))
+            # High frequency noise - varies with activity
+            max_hr_idx = min(int(duration_sec * self.fs), len(ecg_signal))
+            activity_intensity_array = np.zeros(max_hr_idx)
             
-            ecg_signal += baseline_wander + hf_noise
+            for i in range(max_hr_idx):
+                t = i / self.fs
+                activity_cycle = (t % 50) / 50  # Match the 50-second cycle
+                
+                if activity_cycle < 0.25:  # Sprint
+                    activity_intensity_array[i] = 1.0
+                elif activity_cycle < 0.30:  # Transition
+                    activity_intensity_array[i] = 0.5 + np.cos(np.pi * (activity_cycle - 0.25) / 0.05) * 0.5
+                elif activity_cycle < 0.55:  # Recovery
+                    activity_intensity_array[i] = max(0.0, 1.0 - ((activity_cycle - 0.30) / 0.25))
+                else:  # Rest
+                    activity_intensity_array[i] = 0.0
+            
+            hf_noise = (noise_level * (1 + 0.5 * activity_intensity_array)) * np.random.normal(0, 0.02, max_hr_idx)
+            
+            ecg_signal[:max_hr_idx] += baseline_wander + hf_noise
         
         return {
             'signal': ecg_signal,
             'fs': self.fs,
             'duration': len(ecg_signal) / self.fs,
             'state': state,
-            'target_hr': hr,
+            'target_hr': hr_base,
             'actual_hr': np.mean(actual_hr_samples),
             'hrv_level': hrv_level,
             'expected_readiness': expected_readiness,

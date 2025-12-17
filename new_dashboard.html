@@ -1,0 +1,1652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EXRT AI - Sports Performance Dashboard</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Marked.js for Markdown -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    
+    <!-- Google Fonts - Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-green: #10B981;
+            --primary-indigo: #6366F1;
+            --dark-header: #2C3E50;
+            --bg-light: #F4F5F7;
+            --caution-yellow: #F59E0B;
+            --recovery-red: #EF4444;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-light);
+        }
+        
+        /* Shimmer Loading Animation */
+        @keyframes shimmer {
+            0% { background-position: -1000px 0; }
+            100% { background-position: 1000px 0; }
+        }
+        
+        .shimmer {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 1000px 100%;
+            animation: shimmer 2s infinite;
+        }
+        
+        /* Heartbeat Pulse */
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+        }
+        
+        .heartbeat {
+            animation: heartbeat 1s ease-in-out infinite;
+        }
+        
+        /* Live Indicator Pulse */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+        
+        .pulse-dot {
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        /* Glassmorphism */
+        .glass {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+        
+        /* Modal Slide In */
+        @keyframes slideIn {
+            from {
+                transform: translateY(100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .modal-content {
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        /* Reveal Animation */
+        @keyframes reveal {
+            from {
+                max-height: 0;
+                opacity: 0;
+            }
+            to {
+                max-height: 2000px;
+                opacity: 1;
+            }
+        }
+        
+        .reveal {
+            animation: reveal 0.5s ease-out forwards;
+        }
+        
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <!-- Fixed Top Navigation -->
+    <nav class="fixed top-0 left-0 right-0 z-50 shadow-lg" style="background-color: var(--dark-header);">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo -->
+                <div class="flex items-center space-x-3">
+                    <svg class="w-10 h-10" style="color: var(--primary-green);" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                    </svg>
+                    <span class="text-white text-2xl font-bold">EXRT AI</span>
+                </div>
+                
+                <!-- Navigation Links -->
+                <div class="hidden md:flex space-x-6 text-gray-300">
+                    <a href="#overview" class="hover:text-white transition">Overview</a>
+                    <a href="#live-simulator" class="hover:text-white transition">Live Monitor</a>
+                    <a href="#team-dashboard" class="hover:text-white transition">Team</a>
+                    <a href="#personal-health" class="hover:text-white transition">Health</a>
+                    <a href="#business-model" class="hover:text-white transition">Business</a>
+                </div>
+
+                <!-- Right side: Profile & Mobile Menu -->
+                <div class="flex items-center space-x-4">
+                    <!-- Mobile menu button -->
+                    <button id="mobile-menu-button" class="md:hidden text-gray-300 hover:text-white focus:outline-none">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+                        </svg>
+                    </button>
+
+                    <!-- Profile Dropdown -->
+                    <div class="relative">
+                        <div id="profile-button" class="flex items-center space-x-3 cursor-pointer">
+                            <div class="text-right hidden sm:block">
+                                <div class="text-white text-sm font-medium">Dr. Sarah Chen</div>
+                                <div class="text-gray-400 text-xs">Sports Scientist</div>
+                            </div>
+                            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-green-400 to-indigo-500 flex items-center justify-center text-white font-bold hover:scale-110 transition">
+                                SC
+                            </div>
+                        </div>
+
+                        <!-- Dropdown Menu -->
+                        <div id="profile-dropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 origin-top-right">
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Your Profile</a>
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Settings</a>
+                            <div class="border-t border-gray-100"></div>
+                            <a href="#" class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100">Sign out</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Menu (hidden by default) -->
+        <div id="mobile-menu" class="hidden md:hidden bg-slate-800">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                <a href="#overview" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Overview</a>
+                <a href="#live-simulator" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Live Monitor</a>
+                <a href="#team-dashboard" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Team</a>
+                <a href="#personal-health" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Health</a>
+                <a href="#business-model" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Business</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Upload Modal -->
+    <div id="uploadModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50" onclick="App.closeUploadModal(event)">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-xl w-full mx-4 modal-content" onclick="event.stopPropagation()">
+            <!-- Modal Header -->
+            <div class="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-4 rounded-t-2xl flex items-center justify-between">
+                <h3 class="text-2xl font-bold">Upload ECG Signal</h3>
+                <button onclick="App.closeUploadModal()" class="text-white hover:bg-white/20 rounded-full p-2 transition">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="p-6">
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Select ECG File</label>
+                    <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-green-500 transition-colors">
+                        <input type="file" id="ecgFileInput" accept=".pkl,.csv,.json" class="hidden" onchange="App.handleFileSelect(event)">
+                        <label for="ecgFileInput" class="cursor-pointer">
+                            <svg class="w-12 h-12 text-gray-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                            </svg>
+                            <p class="text-sm text-gray-600 mb-1">Click to upload or drag and drop</p>
+                            <p class="text-xs text-gray-500">Supported formats: .pkl, .csv, .json</p>
+                        </label>
+                    </div>
+                    <div id="selectedFileName" class="mt-3 text-sm text-gray-600 hidden"></div>
+                </div>
+
+                <!-- Upload Button -->
+                <button id="uploadButton" onclick="App.uploadAndAnalyze()" disabled class="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold py-3 px-6 rounded-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                    📊 Upload & Analyze
+                </button>
+
+                <!-- Progress -->
+                <div id="uploadProgress" class="hidden mt-4">
+                    <div class="flex items-center space-x-2 mb-2">
+                        <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-green-600"></div>
+                        <span class="text-sm text-gray-600">Analyzing ECG signal...</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div id="uploadProgressBar" class="bg-green-600 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <!-- Results -->
+                <div id="uploadResults" class="hidden mt-4 bg-gray-50 rounded-xl p-4 border border-gray-200">
+                    <h4 class="text-sm font-semibold text-green-900 mb-3">Analysis Results</h4>
+                    <div id="uploadResultsContent" class="text-sm text-gray-700"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content (with top padding for fixed nav) -->
+    <main class="pt-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto pb-20">
+
+        <!-- Section 1: Overview & Features -->
+        <section id="overview" class="mb-12">
+            <h2 class="text-3xl font-bold text-gray-800 mb-6 pb-4 border-b border-gray-200">Platform Overview</h2>
+
+            <!-- Feature Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div onclick="App.openUploadModal()" class="bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-lg p-6 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-gray-100 cursor-pointer">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-gray-800 ">Upload & Analysis</h3>
+                        <svg class="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                        </svg>
+                    </div>
+                    <p class="text-gray-600 text-sm">Securely upload physiological data for in-depth analysis and reporting.</p>
+                </div>
+
+                <div class="bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-lg p-6 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-gray-100">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-gray-800 ">Live Simulator</h3>
+                        <svg class="w-8 h-8 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                        </svg>
+                    </div>
+                    <p class="text-gray-600 text-sm">Real-time monitoring and simulation of biometric signals (e.g., ECG).</p>
+                </div>
+
+                <div class="bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-lg p-6 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-gray-100">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-gray-800 ">AI-Powered Insights</h3>
+                        <svg class="w-8 h-8 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                        </svg>
+                    </div>
+                    <p class="text-gray-600 text-sm">Predictive readiness levels and tailored recovery/optimization plans.</p>
+                </div>
+            </div>
+
+            <!-- Readiness Levels -->
+            <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+                <h3 class="text-xl font-semibold text-gray-800 ">Readiness Levels</h3>
+
+                <div class="space-y-4">
+                    <!-- Ready -->
+                    <div class="flex items-center">
+                        <div class="w-32 text-sm font-medium text-gray-700">Ready (85%)</div>
+                        <div class="flex-1 bg-gray-200 rounded-full h-4 ml-4">
+                            <div class="bg-green-500 h-4 rounded-full" style="width: 85%"></div>
+                        </div>
+                        <span class="ml-4 text-sm text-gray-600">Optimal performance</span>
+                    </div>
+
+                    <!-- Caution -->
+                    <div class="flex items-center">
+                        <div class="w-32 text-sm font-medium text-gray-700">Caution (50%)</div>
+                        <div class="flex-1 bg-gray-200 rounded-full h-4 ml-4">
+                            <div class="bg-yellow-500 h-4 rounded-full" style="width: 50%"></div>
+                        </div>
+                        <span class="ml-4 text-sm text-gray-600">Monitor fatigue</span>
+                    </div>
+
+                    <!-- Recovery -->
+                    <div class="flex items-center">
+                        <div class="w-32 text-sm font-medium text-gray-700">Recovery (15%)</div>
+                        <div class="flex-1 bg-gray-200 rounded-full h-4 ml-4">
+                            <div class="bg-red-500 h-4 rounded-full" style="width: 15%"></div>
+                        </div>
+                        <span class="ml-4 text-sm text-gray-600">Rest required</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: Live Simulator (THE WOW FACTOR) -->
+        <section id="live-simulator" class="mb-12">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-3xl font-bold text-gray-800 pb-4 border-b border-gray-200 w-full ">Live ECG Monitor</h2>
+                <div class="flex items-center space-x-2">
+                    <span class="w-3 h-3 bg-red-500 rounded-full pulse-dot"></span>
+                    <span class="text-red-500 font-semibold text-sm">LIVE</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                <!-- Live Metrics -->
+                <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+                    <div class="text-gray-600 text-sm mb-2">Heart Rate</div>
+                    <div class="text-5xl font-bold text-green-500 heartbeat" id="heartRate">72</div>
+                    <div class="text-gray-500 text-sm mt-1">BPM</div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+                    <div class="text-gray-600 text-sm mb-2">Fatigue Score</div>
+                    <div class="text-5xl font-bold text-indigo-500" id="fatigueScore">12.3</div>
+                    <div class="text-gray-500 text-sm mt-1">% Low</div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+                    <div class="text-gray-600 text-sm mb-2">Signal Quality</div>
+                    <div class="text-5xl font-bold text-purple-500" id="signalQuality">98</div>
+                    <div class="text-gray-500 text-sm mt-1">% Excellent</div>
+                </div>
+            </div>
+
+            <!-- ECG Chart -->
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-6 border border-gray-100">
+                <canvas id="ecgChart" height="80"></canvas>
+            </div>
+
+            <!-- AI Buttons -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <button onclick="App.analyzeVitals()" class="bg-gradient-to-r from-green-500 to-green-600 text-white font-semibold py-3 px-6 rounded-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center space-x-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                    </svg>
+                    <span>Analyze Live Vitals</span>
+                </button>
+
+                <button onclick="App.predictFatigue()" class="bg-gradient-to-r from-indigo-500 to-indigo-600 text-white font-semibold py-3 px-6 rounded-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center space-x-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                    </svg>
+                    <span>Predict Fatigue Trend</span>
+                </button>
+
+                <button onclick="App.analyzeWithMLBackend()" class="bg-gradient-to-r from-purple-500 to-purple-600 text-white font-semibold py-3 px-6 rounded-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center space-x-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/>
+                    </svg>
+                    <span>🤖 ML Readiness Analysis</span>
+                </button>
+            </div>
+
+            <!-- AI Response Container (Hidden initially) -->
+            <div id="liveAiResponse" class="hidden overflow-hidden">
+                <div class="bg-white rounded-xl shadow-lg p-6 border border-indigo-200">
+                    <div class="flex items-center space-x-2 mb-4">
+                        <svg class="w-6 h-6 text-indigo-600" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                        </svg>
+                        <h3 class="text-lg font-semibold text-indigo-900">AI Analysis</h3>
+                    </div>
+                    <div id="liveAiContent" class="prose prose-sm max-w-none text-gray-700"></div>
+                </div>
+            </div>
+
+            <!-- ML Backend Results Container -->
+            <div id="mlResultsContainer" class="hidden mt-8">
+                <div class="bg-white rounded-xl shadow-lg p-6 border border-purple-200">
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="flex items-center space-x-2">
+                            <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/>
+                            </svg>
+                            <h3 class="text-lg font-semibold text-purple-900">🤖 ML Backend Analysis Results</h3>
+                        </div>
+                        <div id="mlOverallState" class="px-4 py-2 rounded-full text-sm font-semibold"></div>
+                    </div>
+
+                    <!-- Summary Statistics -->
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                        <div class="bg-white rounded-lg p-4 shadow">
+                            <div class="text-gray-600 text-xs mb-1">Avg Readiness</div>
+                            <div id="mlAvgReadiness" class="text-2xl font-bold text-purple-600">--</div>
+                        </div>
+                        <div class="bg-white rounded-lg p-4 shadow">
+                            <div class="text-gray-600 text-xs mb-1">Min Readiness</div>
+                            <div id="mlMinReadiness" class="text-2xl font-bold text-pink-600">--</div>
+                        </div>
+                        <div class="bg-white rounded-lg p-4 shadow">
+                            <div class="text-gray-600 text-xs mb-1">Max Readiness</div>
+                            <div id="mlMaxReadiness" class="text-2xl font-bold text-green-600">--</div>
+                        </div>
+                        <div class="bg-white rounded-lg p-4 shadow">
+                            <div class="text-gray-600 text-xs mb-1">Windows Analyzed</div>
+                            <div id="mlWindowCount" class="text-2xl font-bold text-indigo-600">--</div>
+                        </div>
+                    </div>
+
+                    <!-- Readiness Progression Chart -->
+                    <div class="bg-white rounded-lg p-4 shadow">
+                        <h4 class="text-sm font-semibold text-gray-700 mb-3">Readiness Progression Over Time</h4>
+                        <canvas id="readinessChart" class="w-full" style="height: 200px;"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Team Dashboard -->
+        <section id="team-dashboard" class="mb-12">
+            <h2 class="text-3xl font-bold text-gray-800 mb-6 pb-4 border-b border-gray-200 ">Team Dashboard</h2>
+
+            <!-- Squad Summary Cards -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <div class="bg-white rounded-xl shadow-lg p-4 border border-gray-100">
+                    <div class="text-gray-600 text-sm mb-1">Total Players</div>
+                    <div class="text-3xl font-bold text-gray-800">24</div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-lg p-4 border border-gray-100">
+                    <div class="text-gray-600 text-sm mb-1">Ready</div>
+                    <div class="text-3xl font-bold text-green-500">18</div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-lg p-4 border border-gray-100">
+                    <div class="text-gray-600 text-sm mb-1">Caution</div>
+                    <div class="text-3xl font-bold text-yellow-500">4</div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-lg p-4 border border-gray-100">
+                    <div class="text-gray-600 text-sm mb-1">Rest Needed</div>
+                    <div class="text-3xl font-bold text-red-500">2</div>
+                </div>
+            </div>
+
+            <!-- Player Table -->
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden mb-6">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Player</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Position</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Fatigue %</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Readiness</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200">
+                            <tr onclick="App.openPlayerModal('Marcus Johnson', 'Forward', 92, 8.5)" class="hover:bg-gray-50 cursor-pointer transition">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-700 font-bold">MJ</div>
+                                        <div class="ml-3">
+                                            <div class="text-sm font-medium text-gray-900">Marcus Johnson</div>
+                                            <div class="text-xs text-gray-500">#23</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-700">Forward</td>
+                                <td class="px-6 py-4"><span class="px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Ready</span></td>
+                                <td class="px-6 py-4 text-sm text-gray-700">8.5%</td>
+                                <td class="px-6 py-4 text-sm font-semibold text-green-600">92%</td>
+                            </tr>
+
+                            <tr onclick="App.openPlayerModal('Sarah Chen', 'Midfielder', 88, 11.2)" class="hover:bg-gray-50 cursor-pointer transition">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-700 font-bold">SC</div>
+                                        <div class="ml-3">
+                                            <div class="text-sm font-medium text-gray-900">Sarah Chen</div>
+                                            <div class="text-xs text-gray-500">#17</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-700">Midfielder</td>
+                                <td class="px-6 py-4"><span class="px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Ready</span></td>
+                                <td class="px-6 py-4 text-sm text-gray-700">11.2%</td>
+                                <td class="px-6 py-4 text-sm font-semibold text-green-600">88%</td>
+                            </tr>
+
+                            <tr onclick="App.openPlayerModal('David Park', 'Defense', 62, 28.4)" class="hover:bg-gray-50 cursor-pointer transition">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-700 font-bold">DP</div>
+                                        <div class="ml-3">
+                                            <div class="text-sm font-medium text-gray-900">David Park</div>
+                                            <div class="text-xs text-gray-500">#09</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-700">Defense</td>
+                                <td class="px-6 py-4"><span class="px-3 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">Caution</span></td>
+                                <td class="px-6 py-4 text-sm text-gray-700">28.4%</td>
+                                <td class="px-6 py-4 text-sm font-semibold text-yellow-600">62%</td>
+                            </tr>
+
+                            <tr onclick="App.openPlayerModal('James Rodriguez', 'Striker', 38, 42.1)" class="hover:bg-gray-50 cursor-pointer transition">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-700 font-bold">JR</div>
+                                        <div class="ml-3">
+                                            <div class="text-sm font-medium text-gray-900">James Rodriguez</div>
+                                            <div class="text-xs text-gray-500">#07</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-700">Striker</td>
+                                <td class="px-6 py-4"><span class="px-3 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Rest</span></td>
+                                <td class="px-6 py-4 text-sm text-gray-700">42.1%</td>
+                                <td class="px-6 py-4 text-sm font-semibold text-red-600">38%</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex justify-end mb-6">
+                <button onclick="App.exportTeamDataToCSV()" class="bg-white text-gray-700 font-semibold py-2 px-4 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all text-sm flex items-center space-x-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                    <span>Download CSV</span>
+                </button>
+            </div>
+
+            <!-- Team AI Buttons -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <button onclick="App.squadAnalyst()" class="bg-gradient-to-r from-purple-500 to-purple-600 text-white font-semibold py-3 px-6 rounded-lg hover:shadow-xl transition-all">
+                    <span>🤖 AI Squad Analyst</span>
+                </button>
+
+                <button onclick="App.matchStrategy()" class="bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:shadow-xl transition-all">
+                    <span>⚽ Match Strategy</span>
+                </button>
+            </div>
+
+            <!-- Team AI Response -->
+            <div id="teamAiResponse" class="hidden overflow-hidden">
+                <div class="bg-white rounded-xl shadow-lg p-6 border border-purple-200">
+                    <div class="flex items-center space-x-2 mb-4">
+                        <svg class="w-6 h-6 text-purple-600" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                        </svg>
+                        <h3 class="text-lg font-semibold text-purple-900">Team AI Analysis</h3>
+                    </div>
+                    <div id="teamAiContent" class="prose prose-sm max-w-none text-gray-700"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: Personal Health -->
+        <section id="personal-health" class="mb-12">
+            <h2 class="text-3xl font-bold text-gray-800 mb-6 pb-4 border-b border-gray-200 ">Personal Health Monitor</h2>
+
+            <!-- Patch Status -->
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-6 border border-gray-100">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-800">Device Connection</h3>
+                    <div class="flex items-center space-x-2">
+                        <span class="w-3 h-3 bg-green-500 rounded-full pulse-dot"></span>
+                        <span class="text-green-600 font-semibold text-sm">Connected</span>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <div class="text-gray-600 text-sm">Battery</div>
+                        <div class="text-2xl font-bold text-gray-800">87%</div>
+                    </div>
+                    <div>
+                        <div class="text-gray-600 text-sm">Signal Quality</div>
+                        <div class="text-2xl font-bold text-gray-800">Excellent</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Daily Metrics -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+                    <h3 class="text-sm text-gray-600 mb-2">HRV (Heart Rate Variability)</h3>
+                    <div class="text-4xl font-bold text-green-500 mb-2">62ms</div>
+                    <p class="text-sm text-gray-500">↑ 8% from yesterday</p>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+                    <h3 class="text-sm text-gray-600 mb-2">Stress Level</h3>
+                    <div class="text-4xl font-bold text-indigo-500 mb-2">Low</div>
+                    <p class="text-sm text-gray-500">Optimal recovery state</p>
+                </div>
+            </div>
+
+            <!-- Wellness Chart and AI Plan -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Weekly Wellness Chart -->
+                <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">7-Day Wellness Trend</h3>
+                    <div style="height: 250px;">
+                        <canvas id="wellnessChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Personal AI Plan -->
+                <div class="bg-white rounded-xl shadow-lg p-6 flex flex-col border border-gray-100">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">AI Wellness Coach</h3>
+                    <div id="personalAiResponse" class="flex-grow hidden overflow-hidden">
+                        <div class="bg-gray-50 rounded-xl p-4 border border-gray-200 h-full">
+                            <div id="personalAiContent" class="prose prose-sm max-w-none text-gray-700"></div>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <button onclick="App.getWellnessPlan()" class="w-full bg-gradient-to-r from-teal-500 to-teal-600 text-white font-semibold py-3 px-6 rounded-lg hover:shadow-xl transition-all">
+                            <span>📋 Get Daily Wellness Plan</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 5: Business/ROI Calculator -->
+        <section id="business-model" class="mb-12">
+            <h2 class="text-3xl font-bold text-gray-800 mb-6 ">Business Impact Calculator</h2>
+
+            <div class="glass rounded-xl shadow-2xl p-8 backdrop-blur-lg">
+                <!-- Input Fields -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Team Size</label>
+                        <input type="number" id="teamSize" value="25" onchange="App.calculateROI()" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Avg. Player Salary ($K/year)</label>
+                        <input type="number" id="avgSalary" value="500" onchange="App.calculateROI()" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                    </div>
+                </div>
+
+                <!-- Calculated Results -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    <div class="bg-white/80 rounded-lg p-4 shadow-sm">
+                        <div class="text-sm text-gray-600 mb-1">Annual Payroll</div>
+                        <div id="annualPayroll" class="text-2xl font-bold text-gray-800">$12.5M</div>
+                    </div>
+
+                    <div class="bg-white/80 rounded-lg p-4 shadow-sm">
+                        <div class="text-sm text-gray-600 mb-1">Injury Cost Savings</div>
+                        <div id="injurySavings" class="text-2xl font-bold text-green-600">$18.8M</div>
+                    </div>
+
+                    <div class="bg-white/80 rounded-lg p-4 shadow-sm">
+                        <div class="text-sm text-gray-600 mb-1">Performance Uplift Value</div>
+                        <div id="perfUplift" class="text-2xl font-bold text-indigo-600">$27.5M</div>
+                    </div>
+                </div>
+
+                <!-- Total ROI -->
+                <div class="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg p-6 mb-6 text-white">
+                    <div class="text-sm mb-2">Total Value Generated</div>
+                    <div id="totalValue" class="text-5xl font-bold mb-2">$46.3M</div>
+                    <div class="text-sm opacity-90">Platform Cost: $500K | ROI: <span id="roiMultiple" class="font-bold">92.6x</span></div>
+                </div>
+
+                <!-- Generate Memo Button -->
+                <button onclick="App.generateInvestmentMemo()" class="w-full bg-gradient-to-r from-amber-500 to-orange-600 text-white font-semibold py-4 px-6 rounded-lg hover:shadow-2xl transition-all text-lg">
+                    💼 Generate Investment Memo
+                </button>
+
+                <!-- Business AI Response -->
+                <div id="businessAiResponse" class="hidden overflow-hidden mt-6">
+                    <div class="bg-white/80 rounded-xl shadow-lg p-6 border border-amber-200">
+                        <div class="flex items-center space-x-2 mb-4">
+                            <svg class="w-6 h-6 text-amber-600" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                        </svg>
+                        <h3 class="text-lg font-semibold text-amber-900">Investment Memo</h3>
+                    </div>
+                    <div id="businessAiContent" class="prose prose-sm max-w-none text-gray-700"></div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+
+
+    <!-- Player Details Modal -->
+    <div id="playerModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50" onclick="App.closePlayerModal(event)">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full mx-4 modal-content" onclick="event.stopPropagation()">
+            <!-- Modal Header -->
+            <div class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-4 rounded-t-2xl flex items-center justify-between">
+                <h3 id="modalPlayerName" class="text-2xl font-bold">Player Details</h3>
+                <button onclick="App.closeModal()" class="text-white hover:bg-white/20 rounded-full p-2 transition" aria-label="Close player details modal">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="p-6">
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div>
+                        <div class="text-sm text-gray-600">Position</div>
+                        <div id="modalPosition" class="text-lg font-semibold text-gray-800">-</div>
+                    </div>
+                    <div>
+                        <div class="text-sm text-gray-600">Readiness</div>
+                        <div id="modalReadiness" class="text-lg font-semibold text-green-600">-</div>
+                    </div>
+                    <div>
+                        <div class="text-sm text-gray-600">Fatigue Level</div>
+                        <div id="modalFatigue" class="text-lg font-semibold text-indigo-600">-</div>
+                    </div>
+                    <div>
+                        <div class="text-sm text-gray-600">Training Load</div>
+                        <div class="text-lg font-semibold text-gray-800">Medium</div>
+                    </div>
+                </div>
+
+                <!-- Modal AI Buttons -->
+                <div class="space-y-3">
+                    <button onclick="App.recoveryCoach()" class="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold py-3 px-6 rounded-lg hover:shadow-xl transition-all">
+                        🏃 Recovery Coach
+                    </button>
+
+                    <button onclick="App.aiNutritionist()" class="w-full bg-gradient-to-r from-orange-500 to-red-600 text-white font-semibold py-3 px-6 rounded-lg hover:shadow-xl transition-all">
+                        🥗 AI Nutritionist
+                    </button>
+                </div>
+
+                <!-- Modal AI Response -->
+                <div id="modalAiResponse" class="hidden overflow-hidden mt-4">
+                    <div class="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                        <div class="flex items-center space-x-2 mb-3">
+                            <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                            </svg>
+                            <h4 class="text-sm font-semibold text-green-900">AI Recommendation</h4>
+                        </div>
+                        <div id="modalAiContent" class="prose prose-sm max-w-none text-gray-700 text-sm"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Chat Widget -->
+    <div class="fixed bottom-6 right-6 z-50">
+        <button onclick="App.toggleChat()" id="chatButton" class="bg-gradient-to-br from-green-500 to-emerald-600 text-white w-16 h-16 rounded-full shadow-2xl hover:scale-110 transition-all flex items-center justify-center" aria-label="Toggle AI assistant chat">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+            </svg>
+        </button>
+
+        <div id="chatWindow" class="hidden absolute bottom-20 right-0 w-96 bg-white rounded-2xl shadow-2xl">
+            <div class="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-4 rounded-t-2xl flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                    </svg>
+                    <span class="font-semibold">AI Assistant</span>
+                </div>
+                <button onclick="App.toggleChat()" class="hover:bg-white/20 rounded-full p-1 transition" aria-label="Close chat window">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="p-6 h-96 overflow-y-auto bg-gray-50">
+                <div id="chat-messages" class="space-y-4 text-sm"><div class="flex justify-start"><div class="bg-gray-200 text-gray-800 p-3 rounded-lg max-w-[85%]">Hello! Ask me anything about your team's performance.</div></div></div>
+            </div>
+            <div class="px-4 py-3 border-t">
+                <div class="flex space-x-2">
+                    <input type="text" id="chat-input" placeholder="Type your message..." class="flex-1 px-4 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-green-500" onkeypress="if(event.key === 'Enter') App.sendChatMessage()">
+                    <button onclick="App.sendChatMessage()" class="bg-green-500 text-white rounded-full p-2 hover:bg-green-600 transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // ============================================================================
+    // APP NAMESPACE - Encapsulates all dashboard functionality
+    // ============================================================================
+    const App = {
+        // ============================================================================
+        // CONFIGURATION
+        // ============================================================================
+        // IMPORTANT: Never expose API keys in client-side code in a real application.
+        // This key should be stored in a secure backend and API calls should be proxied.
+        GEMINI_API_KEY: "AIzaSyAh_aH2sYEI3MBFZ19sKnirwH0-a2hAM9I", // API Key removed for security
+        BACKEND_API_URL: "http://localhost:8000",
+        get GEMINI_API_URL() {
+            return `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${this.GEMINI_API_KEY}`;
+        },
+        
+        // ============================================================================
+        // BACKEND API FUNCTIONS
+        // ============================================================================
+        
+        // Check backend health
+        async checkBackendHealth() {
+            try {
+                const response = await fetch(`${this.BACKEND_API_URL}/health`);
+                const data = await response.json();
+                return data.status === 'ok' && data.model_loaded;
+            } catch (error) {
+                console.error('Backend health check failed:', error);
+                return false;
+            }
+        },
+        
+        // Generate synthetic ECG data
+        generateSyntheticECG(duration = 90, hrv_level = 'normal') {
+            const fs = 700; // sampling rate
+            const samples = duration * fs;
+            const ecgData = [];
+            
+            // Simple ECG pattern generator
+            for (let i = 0; i < samples; i++) {
+                const beatCycle = i % 350; // ~2 Hz heart rate
+                let value = 0;
+                
+                if (beatCycle < 10) value = 0.1 + Math.random() * 0.05; // P wave
+                else if (beatCycle < 20) value = 0;
+                else if (beatCycle === 25) value = -0.1; // Q
+                else if (beatCycle === 27) value = 1.2; // R
+                else if (beatCycle === 29) value = -0.3; // S
+                else if (beatCycle > 60 && beatCycle < 100) value = 0.2 + Math.sin((beatCycle - 60) * 0.15) * 0.15; // T
+                else value = Math.random() * 0.02;
+                
+                // Add HRV variation
+                if (hrv_level === 'high') value += Math.random() * 0.05;
+                else if (hrv_level === 'low') value += Math.random() * 0.01;
+                else value += Math.random() * 0.03;
+                
+                ecgData.push(value);
+            }
+            
+            return ecgData;
+        },
+        
+        // Analyze ECG with backend
+        async analyzeECGWithBackend(ecgData) {
+            try {
+                const response = await fetch(`${this.BACKEND_API_URL}/readiness`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        ecg: ecgData,
+                        fs: 700,
+                        window_sec: 90,
+                        step_sec: 15
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Backend analysis failed');
+                }
+                
+                return await response.json();
+            } catch (error) {
+                console.error('Backend API Error:', error);
+                return null;
+            }
+        },
+        
+        // Add backend status indicator to page
+        async updateBackendStatus() {
+            const isOnline = await this.checkBackendHealth();
+            const statusHtml = `
+                <div class="fixed top-20 right-4 z-40 bg-${isOnline ? 'green' : 'red'}-500 text-white px-4 py-2 rounded-lg shadow-lg text-sm font-semibold">
+                    Backend: ${isOnline ? '✓ Connected' : '✗ Offline'}
+                </div>
+            `;
+            
+            // Remove existing status if any
+            const existingStatus = document.querySelector('.backend-status');
+            if (existingStatus) existingStatus.remove();
+            
+            // Add new status
+            const statusDiv = document.createElement('div');
+            statusDiv.className = 'backend-status';
+            statusDiv.innerHTML = statusHtml;
+            document.body.appendChild(statusDiv);
+        },
+        
+        // ============================================================================
+        // ML BACKEND ANALYSIS WORKFLOW
+        // ============================================================================
+        readinessChartInstance: null,
+        
+        async analyzeWithMLBackend() {
+            const container = document.getElementById('mlResultsContainer');
+            const liveAiContent = document.getElementById('liveAiContent');
+            
+            // Check backend health first
+            const health = await this.checkBackendHealth();
+            if (!health) {
+                liveAiContent.innerHTML = `
+                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                        <strong>Backend Offline:</strong> ML model is not available. Please start the FastAPI backend on port 8000.
+                    </div>
+                `;
+                container.classList.add('hidden');
+                return;
+            }
+            
+            // Show loading state
+            liveAiContent.innerHTML = `
+                <div class="flex items-center space-x-3">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+                    <span class="text-purple-700 font-semibold">Generating synthetic ECG and analyzing with ML backend...</span>
+                </div>
+            `;
+            
+            try {
+                // Generate synthetic ECG data (90 seconds at 700 Hz)
+                const ecgData = this.generateSyntheticECG(90, 'normal');
+                
+                // Analyze with backend
+                const results = await this.analyzeECGWithBackend(ecgData);
+                
+                if (!results) {
+                    throw new Error('No results returned from backend');
+                }
+                
+                // Display results
+                this.displayMLResults(results);
+                
+                // Show success message
+                liveAiContent.innerHTML = `
+                    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
+                        <strong>✓ Analysis Complete:</strong> ML backend successfully analyzed ${results.summary.n_windows} time windows. Results displayed below.
+                    </div>
+                `;
+                
+            } catch (error) {
+                console.error('ML Analysis Error:', error);
+                liveAiContent.innerHTML = `
+                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                        <strong>Error:</strong> ${error.message}
+                    </div>
+                `;
+                container.classList.add('hidden');
+            }
+        },
+        
+        displayMLResults(results) {
+            const container = document.getElementById('mlResultsContainer');
+            const { summary, window_results, overall_state } = results;
+            
+            // Update summary statistics
+            document.getElementById('mlAvgReadiness').textContent = summary.avg_readiness.toFixed(1);
+            document.getElementById('mlMinReadiness').textContent = summary.min_readiness.toFixed(1);
+            document.getElementById('mlMaxReadiness').textContent = summary.max_readiness.toFixed(1);
+            document.getElementById('mlWindowCount').textContent = summary.n_windows;
+            
+            // Update overall state badge
+            const stateEl = document.getElementById('mlOverallState');
+            const stateColors = {
+                'ready': 'bg-green-500 text-white',
+                'neutral': 'bg-yellow-500 text-white',
+                'fatigued': 'bg-red-500 text-white'
+            };
+            stateEl.className = `px-4 py-2 rounded-full text-sm font-semibold ${stateColors[overall_state] || 'bg-gray-500 text-white'}`;
+            stateEl.textContent = overall_state === 'ready' ? '🟢 Ready' : 
+                                  overall_state === 'neutral' ? '🟡 Neutral' : 
+                                  '🔴 Fatigued';
+            
+            // Create readiness progression chart
+            const chartCanvas = document.getElementById('readinessChart');
+            const chartData = {
+                labels: window_results.map(w => `${Math.floor(w.center_time_sec)}s`),
+                datasets: [{
+                    label: 'Readiness Score',
+                    data: window_results.map(w => w.readiness),
+                    borderColor: '#9333EA',
+                    backgroundColor: 'rgba(147, 51, 234, 0.1)',
+                    borderWidth: 2,
+                    tension: 0.4,
+                    fill: true
+                }]
+            };
+            
+            // Destroy existing chart if any
+            if (this.readinessChartInstance) {
+                this.readinessChartInstance.destroy();
+            }
+            
+            // Create new chart
+            this.readinessChartInstance = new Chart(chartCanvas, {
+                type: 'line',
+                data: chartData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => `Readiness: ${context.parsed.y.toFixed(2)}`
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            title: { display: true, text: 'Readiness Score' }
+                        },
+                        x: {
+                            title: { display: true, text: 'Time (seconds)' }
+                        }
+                    }
+                }
+            });
+            
+            // Show container
+            container.classList.remove('hidden');
+        },
+        
+        // ============================================================================
+        // LIVE ECG CHART
+        // ============================================================================
+        ecgCtx: null,
+        ecgData: {
+            labels: Array(100).fill(''),
+            datasets: [{
+                data: Array(100).fill(50),
+                borderColor: '#10B981',
+                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                borderWidth: 2,
+                tension: 0.4,
+                fill: true,
+                pointRadius: 0
+            }]
+        },
+        ecgChart: null,
+        ecgIndex: 0,
+        initEcgChart() {
+            this.ecgCtx = document.getElementById('ecgChart').getContext('2d');
+            this.ecgChart = new Chart(this.ecgCtx, {
+            type: 'line',
+            data: this.ecgData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: { duration: 0 },
+                scales: {
+                    y: { display: false, min: 0, max: 100 },
+                    x: { display: false }
+                },
+                plugins: { legend: { display: false } }
+            }
+        })},
+        
+        // ECG Pattern Generator
+        generateECGPoint(index) {
+            const cycle = index % 30;
+            if (cycle < 2) return 50 + Math.random() * 3; // P wave
+            if (cycle < 5) return 48 + Math.random() * 2;
+            if (cycle === 6) return 35; // Q
+            if (cycle === 7) return 92; // R peak
+            if (cycle === 8) return 25; // S
+            if (cycle < 14) return 50 + Math.random() * 2;
+            if (cycle < 20) return 58 + Math.sin((cycle - 14) * 0.6) * 6; // T wave
+            return 50 + Math.random() * 2;
+        },
+        
+        updateEcgChart() {
+            this.ecgData.datasets[0].data.push(this.generateECGPoint(this.ecgIndex));
+            this.ecgData.datasets[0].data.shift();
+            this.ecgChart.update();
+            this.ecgIndex++;
+            
+            // Update live metrics
+            if (this.ecgIndex % 20 === 0) {
+                document.getElementById('heartRate').textContent = 68 + Math.floor(Math.random() * 10);
+                document.getElementById('fatigueScore').textContent = (10 + Math.random() * 5).toFixed(1);
+                document.getElementById('signalQuality').textContent = 95 + Math.floor(Math.random() * 5);
+            }
+        },
+        
+        // ============================================================================
+        // WELLNESS CHART
+        // ============================================================================
+        initWellnessChart() {
+            const wellnessCtx = document.getElementById('wellnessChart').getContext('2d');
+            new Chart(wellnessCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                datasets: [{
+                    label: 'Wellness Score',
+                    data: [82, 78, 85, 88, 84, 90, 87],
+                    backgroundColor: 'rgba(99, 102, 241, 0.6)',
+                    borderColor: '#6366F1',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { beginAtZero: true, max: 100 }
+                },
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        })},
+        
+        // ============================================================================
+        // ROI CALCULATOR
+        // ============================================================================
+        calculateROI() {
+            const teamSize = parseInt(document.getElementById('teamSize').value) || 0;
+            const avgSalary = parseInt(document.getElementById('avgSalary').value) || 0;
+            
+            const annualPayroll = teamSize * avgSalary * 1000;
+            const injurySavings = annualPayroll * 1.5; // 150% savings
+            const perfUplift = annualPayroll * 2.2; // 220% uplift
+            const totalValue = injurySavings + perfUplift;
+            const platformCost = 500000;
+            const roiMultiple = (totalValue / platformCost).toFixed(1);
+            
+            document.getElementById('annualPayroll').textContent = '$' + (annualPayroll / 1000000).toFixed(1) + 'M';
+            document.getElementById('injurySavings').textContent = '$' + (injurySavings / 1000000).toFixed(1) + 'M';
+            document.getElementById('perfUplift').textContent = '$' + (perfUplift / 1000000).toFixed(1) + 'M';
+            document.getElementById('totalValue').textContent = '$' + (totalValue / 1000000).toFixed(1) + 'M';
+            document.getElementById('roiMultiple').textContent = roiMultiple + 'x';
+        },
+                
+        // ============================================================================
+        // GEMINI AI INTEGRATION
+        // ============================================================================
+        async callGeminiAPI(systemPrompt, userPrompt) {
+            try {
+                // Call the backend endpoint which handles Gemini API
+                const response = await fetch(`${this.BACKEND_API_URL}/chat`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        message: userPrompt,
+                        context: systemPrompt
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`API request failed: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                return data.response || '⚠️ **Error**: No response from AI service.';
+            } catch (error) {
+                console.error('Gemini API Error:', error);
+                return '⚠️ **Error**: Unable to connect to AI service. Please make sure the backend is running. Details: ' + error.message;
+            }
+        },
+        
+        // Show loading state
+        showLoading(containerId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '<div class="shimmer h-20 rounded-lg"></div>';
+            container.classList.remove('hidden');
+            container.classList.add('reveal');
+        },
+        
+        // Display AI response
+        displayAI(containerId, contentId, text) {
+            const container = document.getElementById(containerId);
+            const content = document.getElementById(contentId);
+            content.innerHTML = marked.parse(text);
+            container.classList.remove('hidden');
+            container.classList.add('reveal');
+        },
+                
+        // ============================================================================
+        // LIVE SIMULATOR AI FUNCTIONS
+        // ============================================================================
+        async analyzeVitals() {
+            const hr = document.getElementById('heartRate').textContent;
+            const fatigue = document.getElementById('fatigueScore').textContent;
+            const quality = document.getElementById('signalQuality').textContent;
+            
+            this.showLoading('liveAiResponse');
+            
+            const systemPrompt = "You are an elite sports physiologist and cardiologist. Provide concise, actionable analysis.";
+            const userPrompt = `Analyze these live vitals:
+- Heart Rate: ${hr} BPM
+- Fatigue Score: ${fatigue}%
+- Signal Quality: ${quality}%
+
+Provide: 1) Current state assessment, 2) Recommendations, 3) Warning signs to watch for.`;
+            
+            const response = await this.callGeminiAPI(systemPrompt, userPrompt);
+            this.displayAI('liveAiResponse', 'liveAiContent', response);
+        },
+        
+        async predictFatigue() {
+            this.showLoading('liveAiResponse');
+            
+            const systemPrompt = "You are a predictive sports analytics AI specializing in fatigue forecasting.";
+            const userPrompt = `Based on current vitals (HR: 72 BPM, Fatigue: 12.3%), predict fatigue trend for next 30 minutes during moderate training. Include timeline and intervention points.`;
+            
+            const response = await this.callGeminiAPI(systemPrompt, userPrompt);
+            this.displayAI('liveAiResponse', 'liveAiContent', response);
+        },
+        
+        // ============================================================================
+        // TEAM DASHBOARD AI FUNCTIONS
+        // ============================================================================
+        async squadAnalyst() {
+            this.showLoading('teamAiResponse');
+            
+            const systemPrompt = "You are an AI sports team analyst. Analyze squad readiness and provide tactical recommendations.";
+            const userPrompt = `Squad Status:
+- Total: 24 players
+- Ready (>70%): 18 players
+- Caution (40-70%): 4 players
+- Rest (<40%): 2 players
+
+Top Performers: Marcus Johnson (92%), Sarah Chen (88%)
+Concerns: David Park (62%), James Rodriguez (38%)
+
+Provide: 1) Overall squad assessment, 2) Lineup recommendations, 3) Risk mitigation strategies.`;
+            
+            const response = await this.callGeminiAPI(systemPrompt, userPrompt);
+            this.displayAI('teamAiResponse', 'teamAiContent', response);
+        },
+        
+        async matchStrategy() {
+            this.showLoading('teamAiResponse');
+            
+            const systemPrompt = "You are a tactical sports strategist AI. Design winning game plans based on player readiness.";
+            const userPrompt = `Upcoming match in 48 hours. Squad readiness: 75% average.
+Ready players: 18 (including key forward Marcus Johnson 92%)
+Fatigued: James Rodriguez (striker, 38%) needs rest.
+
+Provide: 1) Recommended formation, 2) Rotation strategy, 3) Substitution plan, 4) Pre-match prep focus.`;
+            
+            const response = await this.callGeminiAPI(systemPrompt, userPrompt);
+            this.displayAI('teamAiResponse', 'teamAiContent', response);
+        },
+        
+        // ============================================================================
+        // PERSONAL HEALTH AI FUNCTION
+        // ============================================================================
+        async getWellnessPlan() {
+            this.showLoading('personalAiResponse');
+            
+            const systemPrompt = "You are a personalized wellness coach AI. Create daily plans optimized for recovery and performance.";
+            const userPrompt = `User Profile:
+- HRV: 62ms (good, +8% vs yesterday)
+- Stress: Low
+- 7-day wellness trend: 82→78→85→88→84→90→87
+- Device: Connected, 87% battery
+
+Create a personalized wellness plan for today including: sleep targets, nutrition, hydration, training intensity, and recovery activities.`;
+            
+            const response = await this.callGeminiAPI(systemPrompt, userPrompt);
+            this.displayAI('personalAiResponse', 'personalAiContent', response);
+        },
+        
+        // ============================================================================
+        // BUSINESS/ROI AI FUNCTION
+        // ============================================================================
+        async generateInvestmentMemo() {
+            const teamSize = document.getElementById('teamSize').value;
+            const avgSalary = document.getElementById('avgSalary').value;
+            const totalValue = document.getElementById('totalValue').textContent;
+            const roiMultiple = document.getElementById('roiMultiple').textContent;
+            
+            this.showLoading('businessAiResponse');
+            
+            const systemPrompt = "You are an investment banker writing pitch memos for sports tech ventures. Be persuasive and data-driven.";
+            const userPrompt = `Write an executive investment memo for EXRT AI platform.
+
+Key Metrics:
+- Team Size: ${teamSize} players
+- Avg Salary: $${avgSalary}K
+- Total Value Generated: ${totalValue}
+- ROI Multiple: ${roiMultiple}
+- Platform Cost: $500K
+
+Include: 1) Executive Summary, 2) Market Opportunity, 3) Financial Impact, 4) Competitive Advantage, 5) Call to Action.`;
+            
+            const response = await this.callGeminiAPI(systemPrompt, userPrompt);
+            this.displayAI('businessAiResponse', 'businessAiContent', response);
+        },
+        
+        // ============================================================================
+        // PLAYER MODAL FUNCTIONS
+        // ============================================================================
+        currentPlayer: {},
+        
+        openPlayerModal(name, position, readiness, fatigue) {
+            this.currentPlayer = { name, position, readiness, fatigue };
+            document.getElementById('modalPlayerName').textContent = name;
+            document.getElementById('modalPosition').textContent = position;
+            document.getElementById('modalReadiness').textContent = readiness + '%';
+            document.getElementById('modalFatigue').textContent = fatigue + '%';
+            document.getElementById('playerModal').classList.remove('hidden');
+            document.getElementById('playerModal').classList.add('flex');
+            document.getElementById('modalAiResponse').classList.add('hidden');
+        },
+        
+        closeModal() {
+            document.getElementById('playerModal').classList.add('hidden');
+            document.getElementById('playerModal').classList.remove('flex');
+        },
+        
+        closePlayerModal(event) {
+            if (event.target.id === 'playerModal') {
+                this.closeModal();
+            }
+        },
+        
+        async recoveryCoach() {
+            this.showLoading('modalAiResponse');
+            
+            const systemPrompt = "You are an elite recovery coach specializing in athlete rehabilitation and performance optimization.";
+            const userPrompt = `Player: ${this.currentPlayer.name} (${this.currentPlayer.position})
+Readiness: ${this.currentPlayer.readiness}%
+Fatigue: ${this.currentPlayer.fatigue}%
+
+Provide a personalized 48-hour recovery protocol including: rest periods, active recovery exercises, sleep targets, and nutrition recommendations.`;
+            
+            const response = await this.callGeminiAPI(systemPrompt, userPrompt);
+            this.displayAI('modalAiResponse', 'modalAiContent', response);
+        },
+        
+        async aiNutritionist() {
+            this.showLoading('modalAiResponse');
+            
+            const systemPrompt = "You are a sports nutritionist AI creating meal plans for peak athletic performance.";
+            const userPrompt = `Player: ${this.currentPlayer.name} (${this.currentPlayer.position})
+Readiness: ${this.currentPlayer.readiness}%
+Fatigue: ${this.currentPlayer.fatigue}%
+
+Design today's nutrition plan (breakfast, lunch, dinner, snacks) optimized for recovery and performance. Include macros, hydration, and supplement recommendations.`;
+            
+            const response = await this.callGeminiAPI(systemPrompt, userPrompt);
+            this.displayAI('modalAiResponse', 'modalAiContent', response);
+        },
+        
+        // ============================================================================
+        // UPLOAD MODAL FUNCTIONS
+        // ============================================================================
+        selectedFile: null,
+        
+        openUploadModal() {
+            document.getElementById('uploadModal').classList.remove('hidden');
+            document.getElementById('uploadModal').classList.add('flex');
+            this.selectedFile = null;
+            document.getElementById('selectedFileName').classList.add('hidden');
+            document.getElementById('uploadButton').disabled = true;
+            document.getElementById('uploadProgress').classList.add('hidden');
+            document.getElementById('uploadResults').classList.add('hidden');
+        },
+        
+        closeUploadModal(event) {
+            if (!event || event.target.id === 'uploadModal') {
+                document.getElementById('uploadModal').classList.add('hidden');
+                document.getElementById('uploadModal').classList.remove('flex');
+            }
+        },
+        
+        handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                this.selectedFile = file;
+                document.getElementById('selectedFileName').textContent = `Selected: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+                document.getElementById('selectedFileName').classList.remove('hidden');
+                document.getElementById('uploadButton').disabled = false;
+            }
+        },
+        
+        async uploadAndAnalyze() {
+            if (!this.selectedFile) return;
+            
+            // Show progress
+            document.getElementById('uploadProgress').classList.remove('hidden');
+            document.getElementById('uploadResults').classList.add('hidden');
+            document.getElementById('uploadButton').disabled = true;
+            
+            const formData = new FormData();
+            formData.append('file', this.selectedFile);
+            
+            try {
+                // Animate progress bar
+                let progress = 0;
+                const progressInterval = setInterval(() => {
+                    progress += 5;
+                    if (progress > 90) progress = 90;
+                    document.getElementById('uploadProgressBar').style.width = progress + '%';
+                }, 100);
+                
+                const response = await fetch(`${this.BACKEND_API_URL}/upload/signal`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                clearInterval(progressInterval);
+                document.getElementById('uploadProgressBar').style.width = '100%';
+                
+                if (!response.ok) {
+                    throw new Error(`Upload failed: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                console.log('Upload response:', data);
+                
+                // Hide progress, show results
+                setTimeout(() => {
+                    document.getElementById('uploadProgress').classList.add('hidden');
+                    document.getElementById('uploadResults').classList.remove('hidden');
+                    
+                    // Format results - use correct field names from backend
+                    let resultsHTML = `
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200">
+                                <span class="text-gray-600">Overall Readiness</span>
+                                <span class="text-xl font-bold text-green-600">${(data.summary.avg_readiness * 100).toFixed(1)}%</span>
+                            </div>
+                            <div class="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200">
+                                <span class="text-gray-600">Min Readiness</span>
+                                <span class="text-lg font-semibold text-gray-800">${(data.summary.min_readiness * 100).toFixed(1)}%</span>
+                            </div>
+                            <div class="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200">
+                                <span class="text-gray-600">Max Readiness</span>
+                                <span class="text-lg font-semibold text-gray-800">${(data.summary.max_readiness * 100).toFixed(1)}%</span>
+                            </div>
+                            <div class="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200">
+                                <span class="text-gray-600">Duration</span>
+                                <span class="text-lg font-semibold text-gray-800">${(data.duration_sec).toFixed(1)}s</span>
+                            </div>
+                            <div class="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200">
+                                <span class="text-gray-600">Windows Analyzed</span>
+                                <span class="text-lg font-semibold text-gray-800">${data.summary.n_windows}</span>
+                            </div>
+                            <div class="flex items-center justify-between p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200">
+                                <span class="text-gray-600">Overall State</span>
+                                <span class="text-lg font-semibold ${data.overall_state === 'ready' ? 'text-green-600' : data.overall_state === 'neutral' ? 'text-yellow-600' : 'text-red-600'}">${data.overall_state.toUpperCase()}</span>
+                            </div>
+                        </div>
+                    `;
+                    
+                    document.getElementById('uploadResultsContent').innerHTML = resultsHTML;
+                    document.getElementById('uploadButton').disabled = false;
+                }, 500);
+                
+            } catch (error) {
+                console.error('Upload error:', error);
+                document.getElementById('uploadProgress').classList.add('hidden');
+                document.getElementById('uploadResults').classList.remove('hidden');
+                document.getElementById('uploadResultsContent').innerHTML = `
+                    <div class="text-red-600 p-3 bg-red-50 rounded-lg">
+                        <strong>Error:</strong> ${error.message}
+                    </div>
+                `;
+                document.getElementById('uploadButton').disabled = false;
+            }
+        },
+        
+        // ============================================================================
+        // CHAT WIDGET
+        // ============================================================================
+        toggleChat() {
+            const chatWindow = document.getElementById('chatWindow');
+            chatWindow.classList.toggle('hidden');
+        },
+        
+        async sendChatMessage() {
+            const input = document.getElementById('chat-input');
+            const chatMessages = document.getElementById('chat-messages');
+            const message = input.value.trim();
+            
+            if (!message) return;
+
+            // Display user message
+            const userMessageHtml = `<div class="flex justify-end"><div class="bg-indigo-500 text-white p-3 rounded-lg max-w-[85%]">${message}</div></div>`;
+            chatMessages.innerHTML += userMessageHtml;
+            input.value = '';
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            // Show loading indicator
+            const loadingId = 'loading-' + Date.now();
+            const loadingHtml = `<div id="${loadingId}" class="flex justify-start"><div class="bg-gray-200 text-gray-500 p-3 rounded-lg">Thinking...</div></div>`;
+            chatMessages.innerHTML += loadingHtml;
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            // Prepare context for AI
+            const hr = document.getElementById('heartRate').textContent;
+            const fatigue = document.getElementById('fatigueScore').textContent;
+            const systemPrompt = "You are EXRT AI, a helpful dashboard assistant. You have access to the dashboard's current state.";
+            const userPrompt = `Current Dashboard State:
+- Live Heart Rate: ${hr} BPM
+- Live Fatigue Score: ${fatigue}%
+
+User Question: "${message}"
+
+Answer the user's question concisely based on the provided data.`;
+
+            // Call AI and display response
+            const aiResponseText = await this.callGeminiAPI(systemPrompt, userPrompt);
+            document.getElementById(loadingId).remove();
+            const aiMessageHtml = `<div class="flex justify-start"><div class="bg-gray-200 text-gray-800 p-3 rounded-lg max-w-[85%]">${marked.parse(aiResponseText)}</div></div>`;
+            chatMessages.innerHTML += aiMessageHtml;
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        },
+
+        // ============================================================================
+        // DATA EXPORT
+        // ============================================================================
+        exportTeamDataToCSV() {
+            const headers = ['Player', 'Position', 'Status', 'Fatigue %', 'Readiness'];
+            const rows = Array.from(document.querySelectorAll('#team-dashboard tbody tr'));
+            
+            const data = rows.map(row => {
+                const name = row.querySelector('.text-sm.font-medium.text-gray-900').textContent;
+                const position = row.cells[1].textContent;
+                const status = row.cells[2].textContent;
+                const fatigue = row.cells[3].textContent;
+                const readiness = row.cells[4].textContent;
+                return [name, position, status, fatigue, readiness];
+            });
+
+            let csvContent = "data:text/csv;charset=utf-8," 
+                + headers.join(",") + "\n" 
+                + data.map(e => e.join(",")).join("\n");
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "team_status_export.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        },
+        
+        // ============================================================================
+        // UI INTERACTIVITY (Dropdowns, Menus)
+        // ============================================================================
+        initUI() {
+            const profileButton = document.getElementById('profile-button');
+            const profileDropdown = document.getElementById('profile-dropdown');
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+
+            if (profileButton && profileDropdown) {
+                profileButton.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    profileDropdown.classList.toggle('hidden');
+                });
+
+                // Close dropdown when clicking outside
+                window.addEventListener('click', (event) => {
+                    if (!profileButton.contains(event.target)) {
+                        profileDropdown.classList.add('hidden');
+                    }
+                });
+            }
+
+            if (mobileMenuButton && mobileMenu) {
+                mobileMenuButton.addEventListener('click', () => {
+                    mobileMenu.classList.toggle('hidden');
+                });
+            }
+
+            // Smooth scroll for navigation links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    const href = this.getAttribute('href');
+                    if (href !== '#') {
+                        e.preventDefault();
+                        const target = document.querySelector(href);
+                        if (target) {
+                            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            // Close mobile menu after navigation
+                            if (mobileMenu) {
+                                mobileMenu.classList.add('hidden');
+                            }
+                        }
+                    }
+                });
+            });
+        },
+
+        // ============================================================================
+        // INITIALIZATION
+        // ============================================================================
+        init() {
+            try {
+                this.initUI();
+                this.initEcgChart();
+                this.initWellnessChart();
+                this.calculateROI();
+                
+                // Start live updates
+                this.updateBackendStatus();
+                setInterval(() => this.updateBackendStatus(), 30000);
+                setInterval(() => this.updateEcgChart(), 50);
+                
+                console.log('✓ EXRT AI Dashboard initialized successfully');
+            } catch (error) {
+                console.error('Dashboard initialization error:', error);
+            }
+        }
+    };
+
+    // Initialize the application once the DOM is fully loaded
+    document.addEventListener('DOMContentLoaded', () => {
+        App.init();
+    });
+    </script>
+
+</body>
+</html>

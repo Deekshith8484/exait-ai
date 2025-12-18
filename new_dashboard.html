@@ -880,11 +880,13 @@
         // Check backend health
         async checkBackendHealth() {
             try {
+                console.log(`Checking backend health at: ${this.BACKEND_API_URL}/health`);
                 const response = await fetch(`${this.BACKEND_API_URL}/health`);
                 const data = await response.json();
+                console.log('Backend health response:', data);
                 return data.status === 'ok' && data.model_loaded;
             } catch (error) {
-                console.error('Backend health check failed:', error);
+                console.error(`Backend health check failed for ${this.BACKEND_API_URL}/health:`, error);
                 return false;
             }
         },
@@ -978,7 +980,15 @@
             if (!health) {
                 liveAiContent.innerHTML = `
                     <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-                        <strong>Backend Offline:</strong> ML model is not available. Please start the FastAPI backend on port 8000.
+                        <strong>Backend Offline:</strong> Cannot connect to FastAPI backend at <code>${this.BACKEND_API_URL}</code>
+                        <br><br>
+                        <strong>Troubleshooting:</strong>
+                        <ul class="list-disc ml-5 mt-2">
+                            <li>Verify the backend is running at ${this.BACKEND_API_URL}</li>
+                            <li>Check that the /health endpoint returns {"status": "ok", "model_loaded": true}</li>
+                            <li>Ensure CORS is properly configured on the backend</li>
+                            <li>Check browser console (F12) for detailed error messages</li>
+                        </ul>
                     </div>
                 `;
                 container.classList.add('hidden');
@@ -1694,6 +1704,10 @@ Answer the user's question concisely based on the provided data.`;
             try {
                 // Initialize Gemini API key first
                 this.initializeGeminiKey();
+                
+                // Log backend URL for debugging
+                console.log(`Backend API URL configured: ${this.BACKEND_API_URL}`);
+                console.log(`Current hostname: ${window.location.hostname}`);
                 
                 this.initUI();
                 this.initEcgChart();

@@ -6,7 +6,7 @@ while allowing the page to call the FastAPI backend at http://localhost:8000.
 
 from pathlib import Path
 import sys
-
+import requests
 # IMPORTANT:
 # This repo contains a local file named `streamlit.py` which can shadow the real
 # Streamlit package. We remove the workspace root from sys.path before importing
@@ -42,6 +42,16 @@ html_path = Path(__file__).parent / "new_dashboard.html"
 if not html_path.exists():
     st.error("❌ new_dashboard.html not found next to streamlit_new_dashboard.py")
     st.stop()
+BACKEND_API_URL = "http://4.206.202.59:8000"
+
+try:
+    r = requests.get(f"{BACKEND_API_URL}/health", timeout=3)
+    if r.status_code != 200:
+        st.error("❌ Backend is not responding")
+        st.stop()
+except Exception as e:
+    st.error(f"❌ Backend offline: {e}")
+    st.stop()
 
 html_content = html_path.read_text(encoding="utf-8")
 
@@ -50,3 +60,4 @@ st.components.v1.html(html_content, height=5200, scrolling=True)
 
 # Keep the session alive (Streamlit requires this to stay running)
 _ = st.empty()
+

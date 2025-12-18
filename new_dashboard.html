@@ -824,7 +824,7 @@
         // Smart backend URL detection:
         // - Local development (localhost:8501): http://localhost:8000
         // - Docker (no reverse proxy): http://backend:8000 (service name)
-        // - Cloud with Nginx (production): /api (Nginx routes to backend)
+        // - Production/Remote: http://4.206.202.59:8000 (FastAPI backend)
         get BACKEND_API_URL() {
             const hostname = window.location.hostname;
             const protocol = window.location.protocol;
@@ -838,10 +838,8 @@
                 // Docker Compose without Nginx: service-to-service communication
                 return 'http://backend:8000';
             } else {
-                // Production with Nginx reverse proxy: all requests to same origin
-                // Nginx routes /api/* to backend and / to streamlit
-                    // Azure VM (no nginx)
-                return `${protocol}//${hostname}:8000`;
+                // Production/Remote: Connect to FastAPI backend
+                return 'http://4.206.202.59:8000';
             }
         },
         

@@ -1,22 +1,20 @@
-<<<<<<< HEAD
-# 🚀 EXRT MVP – Quick Start Guide
+# 🚀 EXRT AI - Streamlit Cloud Deployment
 
-## Prerequisites
+## Installation
 
-```powershell
-pip install pandas numpy scikit-learn neurokit2 streamlit fastapi uvicorn pydantic plotly
+```bash
+pip install -r requirements.txt
 ```
 
----
+## Local Testing
 
-## Step 1: Train the Model
-
-Navigate to the project directory and run:
-
-```powershell
-cd "g:\exait ai\analysis\models"
-python train_and_save_model.py
+```bash
+streamlit run app.py
 ```
+
+## Cloud Deployment
+
+See [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) for full instructions.
 
 **Expected output:**
 ```

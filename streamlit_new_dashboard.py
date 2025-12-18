@@ -1,7 +1,8 @@
 """Streamlit wrapper that renders new_dashboard.html exactly.
 
 This keeps the UI identical to the HTML version (including JavaScript),
-while allowing the page to call the FastAPI backend at http://localhost:8000.
+while allowing the page to call the FastAPI backend.
+Backend URL: http://4.206.202.59:8000 (production) or http://localhost:8000 (local dev)
 """
 
 from pathlib import Path

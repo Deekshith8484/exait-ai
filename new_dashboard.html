@@ -840,7 +840,8 @@
             } else {
                 // Production with Nginx reverse proxy: all requests to same origin
                 // Nginx routes /api/* to backend and / to streamlit
-                return `${protocol}//${hostname}`;
+                    // Azure VM (no nginx)
+                return `${protocol}//${hostname}:8000`;
             }
         },
         
@@ -1720,4 +1721,5 @@ Answer the user's question concisely based on the provided data.`;
     </script>
 
 </body>
+
 </html>
